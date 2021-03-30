@@ -1,0 +1,152 @@
+<!-- http1_vs_http2.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>http1 vs http2</title>
+		<script src="//cdn.bootcss.com/jquery/1.9.1/jquery.min.js"></script>
+		<style>
+			.box {
+				float: left;
+				width: 200px;
+				margin-right: 100px;
+				margin-bottom: 50px;
+				padding: 20px;
+				/* border: 4px solid pink; */
+				font-family: Microsoft Yahei;
+			}
+			.box h2 {
+				margin: 5px 0;
+			}
+			.box .done {
+				color: pink;
+				font-weight: bold;
+				font-size: 18px;
+			}
+			.box button {
+				padding: 10px;
+				display: block;
+				margin: 10px 0;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="box">
+			<div>
+				<h2>Http1.1</h2>
+				<p>耗时: <span id="output-http1"></span></p>
+				<p class="done done-1">× Unfinished...</p>
+				<button class="btn-1">请求</button>
+			</div>
+
+			<div>
+				<h2>Http2</h2>
+				<p>耗时: <span id="output-http2"></span></p>
+				<p class="done done-1">× Unfinished...</p>
+				<button class="btn-2">请求</button>
+			</div>
+		
+		</div>
+
+		<div class="box">
+			<h2>选项</h2>
+			<p>请求数量: <input type="text" id="req-num" /></p>
+			<p>请求大小 (Mb): <input type="text" id="req-size" /></p>
+			<p>请求延迟 (ms): <input type="text" id="req-delay" /></p>
+			<p>
+				文件类型:
+				<select name="fileType" id="fileType">
+					<option value="text">text</option>
+					<option value="image">image</option>
+				</select>
+			</p>
+		</div>
+
+		<script>
+			function imageLoadTime(id, pageStart) {
+				let lapsed = Date.now() - pageStart
+				document.getElementById(id).innerHTML = (lapsed / 1000).toFixed(2) + 's'
+			}
+
+			let boxes = document.querySelectorAll('.box')
+			let doneTip = document.querySelectorAll('.done')
+			let reqNumInput = document.querySelector('#req-num')
+			let reqSizeInput = document.querySelector('#req-size')
+			let reqDelayInput = document.querySelector('#req-delay')
+			let reqFileTypeSelect = document.querySelector('#fileType')
+
+			let reqNum = 100
+			let reqSize = 0.1
+			let reqDelay = 10
+			let reqFileType = 'text'
+
+			reqNumInput.value = reqNum
+			reqSizeInput.value = reqSize
+			reqDelayInput.value = reqDelay
+			reqFileTypeSelect.value = reqFileType
+
+			reqNumInput.onblur = function () {
+				reqNum = reqNumInput.value
+			}
+
+			reqSizeInput.onblur = function () {
+				reqSize = reqSizeInput.value
+			}
+
+			reqDelayInput.onblur = function () {
+				reqDelay = reqDelayInput.value
+			}
+
+			reqFileTypeSelect.onchange = function () {
+				reqFileType = reqFileTypeSelect.value
+			}
+
+			function clickEvents(index, url, output, server) {
+				doneTip[index].innerHTML = '× Unfinished...'
+				doneTip[index].style.color = 'pink'
+				boxes[index].style.borderColor = 'pink'
+				let pageStart = Date.now()
+				for (let i = 0; i < reqNum; i++) {
+					$.get(url, function (data) {
+						console.log(server + ' data')
+						imageLoadTime(output, pageStart)
+						if (i === reqNum - 1) {
+							doneTip[index].innerHTML = '√ Finished!'
+							doneTip[index].style.color = 'lightgreen'
+							boxes[index].style.borderColor = 'lightgreen'
+						}
+					})
+				}
+			}
+
+			document.querySelector('.btn-1').onclick = function () {
+				clickEvents(
+					0,
+					'https://localhost:1001/option?size=' +
+						reqSize +
+						'&delay=' +
+						reqDelay +
+						'&reqFileType=' +
+						reqFileType,
+					'output-http1',
+					'http1.x'
+				)
+			}
+
+			document.querySelector('.btn-2').onclick = function () {
+				clickEvents(
+					1,
+					'https://localhost:1002/option?size=' +
+						reqSize +
+						'&delay=' +
+						reqDelay +
+						'&reqFileType=' +
+						reqFileType,
+					'output-http2',
+					'http2'
+				)
+			}
+		</script>
+	</body>
+</html>
