@@ -24,7 +24,7 @@ app.get('/option/?', (req, res) => {
 	let size = req.query['size']
 	let delay = req.query['delay']
 	let reqFileType = req.query['reqFileType']
-	let buf = new Buffer(size * 1024 * 1024)
+	let buf = Buffer.alloc(size * 1024 * 1024)
 	setTimeout(() => {
 		if (reqFileType == 'image') {
 			res.set('Content-Type', 'image/png')
